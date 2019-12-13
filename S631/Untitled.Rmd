@@ -1,0 +1,146 @@
+---
+title: "Takehome-final"
+author: "Dandong Tu"
+output: pdf_document
+---
+On my honor, I have not had any form of communication about this exam with any other individual(including other students, teaching assistants, instructors, etc.)--Dandong Tu
+
+##1
+```{r include=FALSE}
+library(alr4)
+Angell=read.table("/Users/dandongtu/Desktop/Angell.txt",header= TRUE)
+```
+```{r}
+b1=powerTransform(cbind(heterogeneity,mobility)~region,data=Angell)
+```
+Based on the summary of **b1**(see detailed summary in Appendix), it suggests that we should use **log** transformation for both **heterogeneity** and **mobility**.
+```{r}
+m1=lm(moralIntegration~log(heterogeneity)+log(mobility)+region,data=Angell)
+```
+```{r eval=FALSE}
+inverseResponsePlot(m1)
+boxCox(m1)
+```
+The inverseResponsePlot and the boxCox shows that the lambda=1 seems appropriate for the response.
+```{r eval=FALSE}
+summary(m1)
+```
+After making the scatterplotmatrix and based on the summary of **m1**,it seems log(**mobility**) and **region** is somehow statisticlly significant(with p-value close to 0.1) while log(**heterogeneity**) is statisticlly significant.\par
+```{r}
+m1.a=lm(moralIntegration~log(heterogeneity),data=Angell)
+m1.b=lm(moralIntegration~log(heterogeneity)+region,data=Angell)
+m1.c=lm(moralIntegration~log(heterogeneity)+log(mobility),data=Angell)
+```
+1st **anova(m1.a,m1)**  2nd **anova(m1.b,m1)**  3rd **anova(m1.c,m1)** (see Appendix for details)\par
+The first anova test shows that we reject the reduced model **m1.a**. Second test shows that the reduced model is somehow adequate with **p-value=0.096**(close to 0.1). The third anova test shows that we have weak evidence against the null hypothesis that  the reduced model is adequate with large **p-value=0.3599**. Therefore, we chose model **m1.c** that  contains log(**heterogeneity**) and log(**mobility**)\par
+```{r}
+m2=lm(moralIntegration~poly(log(heterogeneity),2)+poly(log(mobility),2),data=Angell)
+```
+```{r eval= FALSE}
+summary(m2)
+```
+
+The summary of model **m2** shows that the 1st degree of polynomial is statisticlly significant for both log(**heterogeneity**) and log(**mobility**), while 2nd degree of polynomial for both log(**heterogeneity**) and log(**mobility**) are not statisticlly significant, so that we do not include second degree of polynomial.
+```{r eval=FALSE}
+m3=lm(moralIntegration~log(heterogeneity)*log(mobility),data=Angell)
+Anova(m3)
+```
+The Type II anova test for model **m3** shows that the interation is not statisticlly significant. So that we use the model without the interation.
+```{r eval=FALSE}
+ncvTest(m1.c)
+```
+Based on the ncvTest, we observed a high **p-value**(**0.9779**). Thus, we do not have enough evidence to reject the null(the Variance is constant), and we assume the variance is constant.
+
+###2
+```{r eval=FALSE}
+summary(m1.c)
+```
+```{r}
+coef(m1.c)
+```
+We interpretation for the log(**heterogeneity**) coefficient estimate is the following: if we increase the log(**heterogeneity**)by one unit,keeping the log(**mobility**) fixed, the **moralIntegration** index would decrease by -3.783 units on average.\par
+The interpretation for the log(**mobility**) coefficient estimate is the following: if we increase log(**mobility**) by one unit, keeping the log(**heterogeneity**) fixed, the **moralIntegration** index would decrease by -5.73 units on average.\par
+
+```{r eval=FALSE}
+(rp=residualPlots(m1.c))
+```
+Based on the result of residualPlots tests, all plots look like null plots. And none of the tests has small significance levels, providing no evidence against the mean function.(detailed graphs and test show in supporting material)\par
+At this point, we assume our model is appropriate. And no further changes is needed at this point.\par
+
+#3
+```{r eval=FALSE}
+influenceIndexPlot(m1.c,id.n=4)
+```
+The Cook's distance determined that the observation **Rochester**, **SanDiego**, **Portlandoregon** and **Houston** are 4 most influentials.Please note the value of Cook's distance shows that **Louisville** and **Tulsa** are similar influential with **Portlandoregon** and **Houston** \par
+The Bonferroni p-value are all close to 1, which indicates that there is no outliers.\par
+
+```{r}
+Angell2=Angell[-c(1,18,29,31),] #Rochester,Sandiego,portlandoregon and Houston
+m1.d=lm(moralIntegration~log(heterogeneity)+log(mobility),data=Angell2)
+compareCoefs(m1.c,m1.d)
+```
+The result shows that the coefficient estimates do not have much difference between the the model with selected most 4 influential points and the model without selected most 4 influential points.
+
+##Appendix
+###1
+```{r}
+summary(b1)
+testTransform(b1,c(0,0))
+testTransform(b1,c(1,0))
+testTransform(b1,c(0,1))
+```
+
+```{r}
+scatterplotMatrix(~moralIntegration+heterogeneity+mobility,data = Angell,reg.line=FALSE,smooth=FALSE)
+scatterplotMatrix(~moralIntegration+heterogeneity+mobility|region,data = Angell,reg.line=FALSE,smooth=FALSE)
+```
+It seems there is no specific patterns in scatterplot matrix.
+
+```{r}
+inverseResponsePlot(m1)
+boxCox(m1)
+```
+
+```{r}
+summary(m1)
+```
+```{r}
+anova(m1.a,m1)
+anova(m1.b,m1.c)
+anova(m1.c,m1)
+```
+
+```{r}
+summary(m2)
+```
+
+```{r}
+m3=lm(moralIntegration~log(heterogeneity)*log(mobility),data=Angell)
+Anova(m3)
+```
+```{r}
+ncvTest(m1.c)
+```
+
+
+
+
+###2
+```{r}
+summary(m1.c)
+```
+
+```{r}
+(rp=residualPlots(m1.c, id.n=2))
+```
+
+###3
+```{r}
+outlierTest(m1.c)
+influenceIndexPlot(m1.c,id.n=4)
+influenceIndexPlot(m1.c,id.n=6)
+summary(m1.d)
+```
+
+
+

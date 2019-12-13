@@ -1,0 +1,115 @@
+---
+title: "Hw8"
+author: "Dandong Tu"
+date: "2017/10/24"
+output: pdf_document
+---
+
+#a
+```{r}
+library(alr4)
+data1=read.table("/Users/dandongtu/Downloads/Robey.txt", header=TRUE)
+```
+Based on the description of the data, I chose **tfr** as the response.
+
+```{r}
+plot(tfr~region,data=data1)
+m1=lm(tfr ~region,data=data1)
+summary(m1)$coef
+```
+
+```{r}
+a=c(0,1,-1,0)
+se_b2b3=sqrt(t(a)%*%vcov(m1)%*%a)
+b2b3=as.numeric(coef(m1)[2]-coef(m1)[3])
+t_val=b2b3/se_b2b3
+p_val=2*(1-pt(abs(t_val),m1$df))
+c("b2-b3"=b2b3,"SE"=se_b2b3,"t-Value"=t_val,"p-Value"=p_val)
+```
+In summary, we have the **p-value=5.444346e-02** when we move from **region=Africa** to **region=Near.East**\par
+After,the calculation, we obtained the **P-value=0.2705813**when we move from **region=Asia** to **region=Latin.Amer**\par
+These two **p-value**s has significant difference on the expected respone, which is **tfr**. The value equal **0.0544** indicate that it is almost statistically significant in the model, while value of **0.277** indicates it is no much significant in our model.
+
+#b
+```{r}
+summary(m1)$coef
+```
+$\hat\beta_0=5.855556$ means the value of **E(Y)** when **region=Africa**\par
+$E(Y|U_1=1)=\beta_0$ while $U_2=0$ $U_3=0$ and $U_4=0$\par
+$\hat\beta_2=-2.315556$ means the estimated change in **E(Y)** when we move from **region=Africa** to **region=Asia**\par
+$E(Y|U_2=1)=\beta_0+\beta_2$ while $U_3=0$ and $U_4=0$\par
+$\hat\beta_3=1.805556$ means the estimated change on **E(Y)** when we move from **region=Africa** to **region=Latin.Amer**\par
+$E(Y|U_3=1)=\beta_0+\beta_3$ while $U_2=0$ and $U_4=0$\par
+$\hat\beta_=-1.055556$ means the estimated change on **E(Y)** when we move from **region=Africa** to **region=Near.East**\par
+$E(Y|U_4=1)=\beta_0+\beta_4$ while $U_2=0$ and $U_3=0$\par
+
+#c
+```{r}
+plot(Effect(c("region"), m1))
+```
+From the effects plot above, we can see that the value for **E(Y)** when **region=Africa** is around **5.85** and the value for **E(Y)** is about **3.5**when we move from **region=Africa** to **region=Asia**.Similarlly, value for **E(Y)** is about **4.0**when we move from **region=Africa** to**region=Latin.Amer**. And value for **E(Y)** is about **4.8**when we move from **region=Africa** to **region=Near.East**
+
+#d
+```{r}
+scatterplot(tfr~contraceptors| region, data=data1,
+            smooth=FALSE, boxplots=FALSE)
+```
+From the scatterplot, the black line indicates $\hat E(Y|X=x,U_1=1)=\hat\beta_0+\hat\beta_1x$ \par
+Similarlly, the red line indicates $\hat E(Y|X=x,U_2=1)=(\hat\beta_0+\hat\beta_{02})+(\hat\beta_1+\hat\beta_{12})x$\par
+The green line indicates $E(Y|X=x,U_3=1)=(\hat\beta_0+\hat\beta_{02})+(\hat\beta_1+\hat\beta_{13})x$\par
+The green line indicates $E(Y|X=x,U_4=1)=(\hat\beta_0+\hat\beta_{02})+(\hat\beta_1+\hat\beta_{14})x$\par
+Meanwhile, we can easily observe that the slope for these line are less than **0**, so that we could conclude that changes in continuous regressors are associated to change on expected response. Put antoher word, when the **x** is changing, the estimated expected value will change.\par
+Also, it is not difficult to see that the slops for each levels are different and as well as intercepts.
+
+#e
+```{r}
+m2=lm(tfr~region*contraceptors,data=data1)
+round(summary(m2)$coef,3)
+```
+The model **m2** is the model we observed with interaction. Similarlly with previous parts, we have the coeffcient of **-0.322,-0.237,-0.633** which indicates the value of **E(Y)**if we move from **region=Africa** to **region=Asia,region=Latin.Amer,region=Near.East**,while keep the continues regressor and interaction in the model. \par
+And we have the coeffcient of **-0.064** which indicates the changing in **E(Y)** if we change one unit of **contraceptors**,while keep the factors and the interactions.\par
+Also, we observed the coeffcients for interactions.And now we have the model: $E(Y)=\hat\beta_0+\hat\beta_{01}U1+\hat\beta_{02}U2+\hat\beta_{03}U3+\hat\beta_1x+\hat\beta_{12}x+\hat\beta_{13}x+\hat\beta_{14}x$ When the **region=Africa** we has the $\hat E(Y|X=x,U_1=1)=\hat\beta_0+\hat\beta_1x$,the term $\hat\beta_1$ is the slope and the $\hat\beta_0$is the intercept. And when we move the **region=Africa** to **region=Asia** we have $\hat E(Y|X=x,U_2=1)=(\hat\beta_0+\hat\beta_{02})+(\hat\beta_1+\hat\beta_{12})x$ So, we observed the term $(\hat\beta_1+\hat\beta_{12})$ as the slope(the slope of red line in part(d)) and the term $(\hat\beta_0+\hat\beta_{02})$ as intercept(the intercept for red line in part(d)),and the slope also indicates to the coefficient **regionAsia:contraceptors**. The means for coefficient **regionLatin.Amer:contraceptors** and **regionNear.East:contraceptors** are similar when we move to different **region**.\par
+
+
+
+#f
+Based on the table in part(e), we observed high **p-value** for interactions(**0.761**,**0.796** and **0.393**). For the hypothesis, $H_0:\beta_12=0$ and $H_a:\beta_12 \neq0$, since **p-value** are large, I fail to reject $H_0$. We do not have sufficient evidence to conclude that the slope of the regression **"tfr~contraceptors"** change while I move from **region=Africa** to **region=Asia**,**region=Latin.Amer** and **region=Near.East**\par
+We conclue that chaning in **E(Y)** for interactions are not statistically significantly differentiate for different **region** levels, therefore, we drop the interaction terms.\par
+The **p-value**for the continues regressor is essencially **0** indicates the statisticlly significant in our model, and suggest that we should include **contraceptors** in our model. \par
+
+```{r}
+b=c(0,0,1,-1)
+se_b3b4=sqrt(t(b)%*%vcov(m1)%*%b)
+b3b4=as.numeric(coef(m1)[3]-coef(m1)[4])
+t_val=b3b4/se_b3b4
+p_val=2*(1-pt(abs(t_val),m1$df))
+c("b3-b4"=b3b4,"SE"=se_b3b4,"t-Value"=t_val,"p-Value"=p_val)
+
+c=c(0,1,0,-1)
+se_b2b4=sqrt(t(c)%*%vcov(m1)%*%c)
+b2b4=as.numeric(coef(m1)[2]-coef(m1)[4])
+t_val=b2b4/se_b2b4
+p_val=2*(1-pt(abs(t_val),m1$df))
+c("b2-b4"=b2b4,"SE"=se_b2b4,"t-Value"=t_val,"p-Value"=p_val)
+```
+Based on the summary of **m2** and the above test,as well as the test we finished in part(a). The **p-value** for these movements in different factor levels are such high, and it indicates the factors is not statisticlly significant. Therefore, we decide to drop the factors as well.
+
+#g
+```{r}
+m3=lm(tfr~contraceptors,data=data1)
+round(summary(m3)$coef,3)
+plot(allEffects(m3),
+     grid=TRUE, multiline=TRUE)
+```
+Now, we only have **contraceptors** in our model. The effect plot shows above indicates the changing in **tfr** while we have different value of **contraceptors**. From the observation, we see that when the value of **contraceptors** are in low range or high range, it has more effect rather than it's in the middle.
+
+
+#h
+```{r}
+aggregate(contraceptors~region,data1,mean)
+data_new=data.frame(contraceptors=51.3,region="Asia")
+predicted_value=predict(m3,data_new,interval="prediction")
+(predicted_value)
+```
+From the result, we observed the fit value of **3.878** and we have the predicted interval in **[2.7,5.5]**
+

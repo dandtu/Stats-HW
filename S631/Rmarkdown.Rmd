@@ -1,0 +1,114 @@
+---
+title: "HW11"
+author: "Dandong Tu"
+date: "2017/11/29"
+output: pdf_document
+---
+
+##8.2
+###8.2.1
+```{r}
+library(alr4)
+plot(sqrt(stopping$Distance)~stopping$Speed)
+```
+From the plot we see that the sqrt seems a appropriate transformation for **Distance** that can linearize this regression.
+
+###8.2.2
+```{r}
+invTranPlot(stopping$Speed,stopping$Distance,-1)
+invTranPlot(stopping$Speed,stopping$Distance,0)
+invTranPlot(stopping$Speed,stopping$Distance,1)
+```
+From the plots, it seems none of the value (-1,0,1) are adequate.
+
+###8.2.3
+```{r}
+invTranPlot(stopping$Speed,stopping$Distance,2)
+```
+In the graph, the lines fit well. It seems that using lambda = 2 to transform the predictor **Speed**in problem 8.2.2 does match the data well.
+
+###8.8.4
+```{r}
+w=(1/stopping$Speed)^2
+m1=lm(Distance~Speed+I(Speed^2),data=stopping,weights = w)
+plot(Distance~Speed,data = stopping)
+lines(4:40,predict(m1,data.frame(Speed=4:40)),lty=1,lwd=1)
+m11=lm(sqrt(Distance)~Speed,data = stopping)
+lines(4:40,predict(m11,data.frame(Speed=4:40))^2,lty=2,lwd=2)
+```
+\par
+From the result, we observed that two lines are very closed and seems like lapped. The reason behind this is that take the sqrt for the **Distance** is same as take **I(Speed^2)**
+
+##8.6
+###8.6.1
+```{r}
+Len=factor(Wool$len,ordered=FALSE)
+Amp=factor(Wool$amp,ordered = FALSE)
+Load=factor(Wool$load,ordered=FALSE)
+Wool2=data.frame(Len,Amp,Load,Wool$cycles)
+scatterplotMatrix(~Len+Amp+Load+Wool.cycles,data = Wool2)
+```
+\par
+The scatterplot matrix shows the relations between **Len**,**Amp**,**Load** and **cycles**
+
+###8.6.2
+```{r}
+m2=lm(Wool$cycles~Len+Amp+Load+Len:Load+Len:Amp+Amp:Load)
+summary(m2)
+```
+\par
+The $R^2$ is 0.9952 indicates the models explain 99.52% variability of the response data. Several low p-vale indicates the regressors are statisticlly significant, and the above model describes the data well.
+```{r}
+print(plot(effect("Amp:Load",m2,),multiline = TRUE))
+print(plot(effect("Len:Amp",m2,),multiline = TRUE))
+```
+\par
+The effect plot shows the effect of **AMP** in mean response in different **Len** values.
+
+###8.6.3
+```{r}
+m3=lm(Wool$cycles~Len+Amp+Load)
+summary(m3)
+```
+\par
+The summary shows that the model is not adequate for these data.
+```{r}
+m4=lm(cycles~len+amp+load,data=Wool)
+(inverseResponsePlot(m4))
+```
+\par
+The inverseResponsePlot shows -0.06 is the best fit lambda, the value is pretty closed to 0. 
+```{r}
+summary(powerTransform(m4))
+```
+\par
+The Lwr bnd to Upr Bnd is incloude value of 0. The powerTransform summary shows that the p-value for lambda=0 is large, so that we are unable to reject the null(lambda=0 which means use log transformation). 
+
+```{r}
+boxCox(m4)
+```
+\par
+The Box Cox graph shows that based on a 95% confidence intervial, the lambda value of 0 is inculded. It suggests that use **Log** transformation is appropriate.
+
+###8.6.4
+```{r}
+m5=lm(log(Wool$cycles)~Len+Amp+Load+Len:Amp+Len:Load+Amp:Load)
+m6=lm(log(Wool$cycles)~Len+Amp+Load)
+anova(m6,m5)
+```
+\par
+From the result of F-test, p-value is **0.1325** we do not have enough evidence to reject the **H0**, so we use the model **m6** without the interation.
+```{r}
+print(plot(effect("Len:Amp",m6,),multiline = TRUE))
+```
+\par
+We observed three parallel lines.
+
+```{r}
+m7=lm(Wool$cycles~Len+Amp+Load)
+print(plot(effect("Len:Amp",m7,),multiline = TRUE))
+```
+\par
+Now comparing the result with 8.6.2, we have the similar graphs. 
+
+

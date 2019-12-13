@@ -1,0 +1,89 @@
+---
+output: pdf_document
+---
+#Takehome 2
+On my honor, I have not had any form of communication about this exam with any other individual(including other students, teaching assistants, instructors, etc.) -Dandong Tu\par
+
+**1a**  
+Based on the summary of **m1** attached in supporting materal **1a**, the expected response is significantly different among the levels since the **p-value** are both small when we move from base level to other two levels.\par
+```{r include=FALSE}
+library(alr4)
+```
+```{r}
+data1=read.table("/Users/dandongtu/Desktop/takehome2.txt")
+m1=lm(data1$Energy~data1$Type)
+```
+
+
+**1b**
+```{r}
+Anova(m1)
+```
+We observed the **p-value=0.0004576**, thus we reject the $H_0: E(Energy|X)=\beta_0$ and conclude that **Type** does have a statistically significant influence on **Energy**.\par
+
+**2a** From the plots in supporting material **2a**, it is easy to see that the "log" transformation in **Mass** is more reasonable as a linear relation for **Energy**.
+```{r}
+m2.a=lm(Energy~poly(log(Mass),2),data=data1)
+```
+From summary of model **m2.a** in supporting materal **2a**, we obtained **p-value=3.02e-16** for the 1st degree of polynomial,means that it's statisticlly significant. Since the **p-value** for 2nd degree of polynomial is **0.278**, means it's not statisticlly significant, so that we conclude we should not include second degree of polynomial.\par
+
+**2b**
+```{r}
+m2=lm(Energy~log(Mass),data=data1) 
+Anova(m2)
+```
+The **p-value=2.2e-16**, thus we reject the $H_0: E(Energy|X)=\beta_0$ and conclude that log(**Mass**) does have a statistically significant influence on **Energy**.\par
+
+**3a**
+```{r}
+m3=lm(Energy~log(Mass)+Type,data=data1)
+m3.a=lm(Energy~log(Mass)*Type,data=data1)
+anova(m3,m3.a)
+```
+We obtained the **p-value=0.5265** from the anova table, and we fail to reject the reduced model (reduced model is adequate). Therefore, we would like to use a model without the interactions.\par
+
+**3b**
+```{r}
+Anova(m3)
+```
+The **p-value** for **Type** is **0.6593** and so we fail to reject the null which means **Type** does not have a significant effect after adjusting for log(**Mass**). Thus, we choose the model only contains log(**Mass**).\par
+
+**4a**
+```{r}
+m4=lm(Energy~log(Mass),data=data1)
+ncvTest(m4)
+ncvTest(m4,~I(log(Mass)^2))
+```
+The residualPlot in supporting materal **4a** does not show a clear trend of residuals.Also, based on the ncvTest, we observed that both tests have high **p-value**(**0.4103** and **0.428**). Thus, we do not have enough evidence to reject the null(the Variance is constant), and we assume the variance is constant.\par
+
+**4b**
+```{r}
+confint(m4,level = 0.98)[2,]
+sandwich_se=sqrt(diag(hccm(m4,type = "hc3")))
+(sandwich_ci98=c(coef(m4)-qt(0.99,20-2)*sandwich_se,coef(m4)+qt(0.99,20-2)*sandwich_se))
+```
+From the results, it is easy to see that the 98% CI of OLS corrected with sandwich estimator is narrower than just using OLS since the standard error is adjusted to be smaller with sandwich estimator\par
+
+**Supporting material:**\par
+
+###supporting materal for 1a.
+```{r}
+summary(m1)
+```
+###supporting materal for 2a.
+```{r}
+plot(Energy~Mass,data=data1)
+plot(Energy~log(Mass),data=data1)
+```
+```{r}
+summary(m2.a)
+```
+###supporting materal for 3b
+```{r}
+summary(m3)
+```
+###supporting materal for 4a
+```{r}
+summary(m4)
+plot(residuals(m4))
+```

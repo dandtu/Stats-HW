@@ -1,0 +1,72 @@
+---
+title: "hw12"
+author: "Dandong Tu"
+date: "2017/12/5"
+output: pdf_document
+---
+
+#1.
+
+![hw12-1](hw12-1.png)
+\par
+
+#2
+```{r}
+library(alr4)
+m1 = lm(formula = log(BSAAM)~log(APMAM)+log(APSAB)+log(APSLAKE)+log(OPBPC)+log(OPRC)+log(OPSLAKE),data=water)
+rp1=residualPlots(m1,id.n=2)
+```
+Some of the residual plots seem to have curvature.\par
+
+```{r}
+rp1
+```
+None of the tests has small significance levels, provding no evidence against the mean function. With p-value of **0.066** in Tukey test, We do not have enough evidence to reject the H0 that there is no curvature.\par
+
+#3
+```{r}
+m2=lm(Buchanan~Bush,data=florida)
+scatterplot(Buchanan~Bush,data= florida,id.n=1)
+```
+The Scatterplot shows **PALM BEACH** is an outlier.\par
+
+```{r}
+outlierTest(m2)
+cd2=cooks.distance(m2)
+cd2[50]
+mean(cd2)
+```
+Based on the test, we obtained a very small p-value that is an indication that it is an outlier. From the cook test for the city **PALM BEACH**, compare with the mean of **cd2** we observed a high value, and we conclue that the city **PALM BEACH** has a very high chance it is an outlier.\par
+
+```{r}
+scatterplot(Buchanan~Bush,data= florida,id.n=2)
+```
+It seems another country with an unusal value of the Buchanan vote, given its **Bush** value, is **DADE**
+```{r}
+cd2[13]
+mean(cd2)
+```
+Same as the previous one, the distance value of the city **DADE** is large, we conclude that the city **DADE** has the high chance to be an outlier. It seems the butterfly ballot do have the issue of vote.
+
+```{r}
+inverseResponsePlot(m2)
+boxCox(m2)
+```
+From the graph we observe that the best lambda is about 0.3. And the boxCox shows that 0 is concluded under the 95% confidence interval. Therefore, we use **log** transformation to better fit a simple linear regression.
+```{r}
+m3=lm(Buchanan~log(Bush),data=florida)
+scatterplot(Buchanan~log(Bush),data= florida,id.n=2)
+```
+```{r}
+outlierTest(m3)
+cd3=cooks.distance(m3)
+cd3[50]
+mean(cd3)
+```
+Based on the cook distance test, and compared with mean value, the city **PALM BEACH** is still have large distance value and we still conclude that it has a high chance to be an outlier.
+
+```{r}
+cd3[13]
+mean(cd3)
+```
+Comparing with the prevous steps to test the city **DADE**, We found that the DADE now has the distance below the mean, and we conclude that after the transformation, the city **DADE** seems no longer to be an outlier.

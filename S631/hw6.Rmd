@@ -1,0 +1,80 @@
+---
+title: "HW6"
+author: "DANDONG TU"
+date: "2017/10/2"
+output: pdf_document
+---
+
+#1
+###a)
+
+```{r}
+library(alr4)
+data1=read.table("/Users/dandongtu/Downloads/Angell.txt",header= TRUE)
+scatterplotMatrix(~ heterogeneity+mobility+moralIntegration,
+                  data=data1,
+                  diagonal="none",
+                  smoother=FALSE)
+```
+
+From the scatter polt matrix we observed relationship between the response and predictors. The least-squares lines indicate the slightly negative relationships with response for both predictors and these are reasonalble summaries.
+
+###b)
+```{r}
+lm.h=lm(data1$moralIntegration~data1$heterogeneity)
+summary(lm.h)
+```
+From the summary we observed the linear regress of $y=-0.1028x+14.4236$. The $\hat\beta_1=-0.1028$ and $\hat\beta_0=14.4236$. Meanwhile the coefficient of determination which is $R^2$ is equal to 0.329 which indicates that model explains 32.9% of the predictor of the response data. 
+
+##c)
+```{r}
+lm.both=lm(data1$moralIntegration~data1$heterogeneity+data1$mobility)
+summary(lm.both)
+```
+In summary we have $\hat\beta_1=-0.1086$ and $\hat\beta_2=-0.1933$, also $\hat\beta_0=19.9408$ which shows the regression $y=-0.1086x_1-0.1933x_2+19.9408$ 
+Also we observed coefficient of determination with value of 0.606 which indicates that model explains 60.6% of the predictors of the response data, that is far away larger than the 32.9% that we observed in part(b)
+
+```{r}
+avPlots(lm.both)
+```
+
+From the add-variable plots, we observed the influence from the original model(which contains only one predictors) to new model(contains two predictors).Specifically, its the additional contribution of x1 on y once the contribution of x2 has been already accounted for.
+
+
+##d)
+```{r}
+m1=lm(data1$moralIntegration~data1$heterogeneity)
+summary(m1)
+```
+By observing the summary of heterogeneity to moralIntegration, we conclude that for one additional in heterogeneity , moralIntegration reduce by 0.1028 units.
+$\hat\beta_1=-0.1028$  $se(\hat\beta_1|x)=0.0221$ $t=\frac{\hat\beta_3-\beta_3}{se(\hat\beta_1|x)}=-2.8$
+p-value=3.5e-05
+
+
+```{r}
+confint(m1,level = 0.97)
+```
+Hypothesis test: H0: $\beta_1=0$  H1:$\beta_1\neq0$
+The 97% confidence interval for the intercept is [12.569,16.279] which does not include 0 and so the intercept is significantly different from 0.
+The 97% confidence interval for the slope is[-0.152,-0.053] which also does not include 0 and so the slope is significantly different from 0, so that we reject Ho.
+
+##e)
+```{r}
+Angell=data1
+set.seed(100)
+n = dim(Angell)[1]
+Angell$social = with(Angell, heterogeneity+mobility+rnorm(n,0,.1))
+mod1 = lm(moralIntegration ~ heterogeneity + mobility + social, data = Angell)
+summary(mod1)
+confint(mod1,level = 0.97)
+```
+Hypothesis test: H0: $\beta_1=0$  H1:$\beta_1\neq0$
+From the result, we observe that the 97% confidence interval for the intercept is [17.15,22.72] which does not include 0 and so the intercept is significantly different from 0
+Also,the 97% confidence interval for the slope is [-7.11, 6.76] which includs 0 so we cannot conclude that it is different from 0.
+Compare the results with part d, we see a big difference.
+
+```{r}
+Angell1=Angell[,c(2,3,5)]
+crossprod(scale(Angell1,center = TRUE, scale = FALSE))
+```
+From the covariance matrix, we observed super large value within heterogeneity~social (16977) come with high value of 17498(heterogeneity~heterogeneity) and 20452(social~social). This large value means the two predictors (heterogeneity and social) are highly correlated. Thus, after adding the predictor "social" to the new model(with social), it makes a huge influence. That is the reason why we observed such contradictory results.
